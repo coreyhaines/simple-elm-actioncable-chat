@@ -1,24 +1,9 @@
-# README
+# Sample Elm-ActionCable Chat App
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Very simple chat app that uses Elm for the front-end, Rails ActionCable on the backend.
 
-Things you may want to cover:
+## Thanks
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Used a lot from these two blog posts
+* [Elm on Rails 5.1 with Webpacker](https://bendyworks.com/blog/elm-on-rails-5-1-webpacker)
+* [Evil Front Part 3: Modern Front-end in Rails](https://evilmartians.com/chronicles/evil-front-part-3)
