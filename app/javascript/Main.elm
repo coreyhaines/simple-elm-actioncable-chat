@@ -50,7 +50,7 @@ bodyView model =
         [ text "Send A Chat Message"
         ]
     , input [ onInput UserUpdatesMessageToSend, value model.messageToSend ] []
-    , button [ onClick SendMessage ] [ text "Send Message" ]
+    , button [ onClick UserClickedSendMessageButton ] [ text "Send Message" ]
     , br [] []
     , Maybe.Extra.unwrap (text "") (\msg -> text <| "Message Received! " ++ msg) model.messageReceived
     ]
@@ -61,8 +61,8 @@ bodyView model =
 
 
 type Message
-    = SendMessage
-    | ReceivedMessage String
+    = UserClickedSendMessageButton
+    | PortSentMessage String
     | UserUpdatesMessageToSend String
 
 
@@ -73,12 +73,12 @@ type Message
 update : Message -> Model -> ( Model, Cmd Message )
 update msg model =
     case msg of
-        SendMessage ->
+        UserClickedSendMessageButton ->
             ( { model | messageToSend = "" }
             , sendMessage model.messageToSend
             )
 
-        ReceivedMessage message ->
+        PortSentMessage message ->
             ( { model | messageReceived = Just message }
             , Cmd.none
             )
@@ -95,7 +95,7 @@ update msg model =
 
 subscriptions : Model -> Sub Message
 subscriptions model =
-    receivedMessage ReceivedMessage
+    receivedMessage PortSentMessage
 
 
 
