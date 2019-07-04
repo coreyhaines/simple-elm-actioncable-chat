@@ -24,11 +24,16 @@ type alias Model =
     }
 
 
-type alias IncomingMessage =
+type alias ChatMessage =
     { userId : UserId
     , userName : String
     , message : String
     }
+
+
+type IncomingMessage
+    = MessageParsingError Json.Decode.Error
+    | MessageReceived ChatMessage
 
 
 
@@ -100,10 +105,16 @@ messageView myUserId incomingMessage =
 
             else
                 ""
+
+        messageDisplay =
+            case incomingMessage of
+                MessageParsingError err ->
+                    "Error parsing message " ++ Json.Decode.errorToString err
+
+                MessageReceived message ->
+                    "Message sent by " ++ message.userName ++ userView message.userId ++ " : " ++ message.message
     in
-    div []
-        [ text <| "Message sent by " ++ incomingMessage.userName ++ userView incomingMessage.userId ++ " : " ++ incomingMessage.message
-        ]
+    div [] [ text messageDisplay ]
 
 
 
@@ -155,7 +166,7 @@ update msg model =
 
 subscriptions : Model -> Sub Message
 subscriptions model =
-    receivedMessage (\{ user_id, user_name, message } -> PortSentMessage { userId = UserId user_id, userName = user_name, message = message })
+    receivedMessage (\{ user_id, user_name, message } -> PortSentMessage <| MessageReceived { userId = UserId user_id, userName = user_name, message = message })
 
 
 
