@@ -47,7 +47,7 @@ init flags =
 
 view : Model -> Browser.Document Message
 view model =
-    { title = "Chat: " ++ userIdToString model.userId
+    { title = "Chat: " ++ model.userName
     , body = bodyView model
     }
 
