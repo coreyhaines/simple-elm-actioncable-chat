@@ -12,16 +12,20 @@ import Maybe.Extra
 -- MODEL
 
 
+type UserId
+    = UserId String
+
+
 type alias Model =
     { messagesReceived : List IncomingMessage
     , messageToSend : String
-    , userId : String
+    , userId : UserId
     , userName : String
     }
 
 
 type alias IncomingMessage =
-    { userId : String
+    { userId : UserId
     , userName : String
     , message : String
     }
@@ -40,7 +44,7 @@ init : Flags -> ( Model, Cmd Message )
 init flags =
     ( { messagesReceived = []
       , messageToSend = ""
-      , userId = flags.userId
+      , userId = UserId flags.userId
       , userName = "Unnamed User"
       }
     , Cmd.none
@@ -65,7 +69,7 @@ bodyView model =
       h1 [ style "display" "flex", style "justify-content" "center" ]
         [ text "Send A Chat Message"
         ]
-    , div [] [ text <| "Your user id: " ++ model.userId ]
+    , div [] [ text <| "Your user id: " ++ userIdToString model.userId ]
     , div []
         [ text "Your name: "
         , input [ onInput UserUpdatesUserName, value model.userName ] []
@@ -76,7 +80,7 @@ bodyView model =
     ]
 
 
-messagesView : { model | userId : String, messagesReceived : List IncomingMessage } -> Html Message
+messagesView : { model | userId : UserId, messagesReceived : List IncomingMessage } -> Html Message
 messagesView { userId, messagesReceived } =
     div []
         [ h2 [] [ text "Messages" ]
@@ -84,7 +88,12 @@ messagesView { userId, messagesReceived } =
         ]
 
 
-messageView : String -> IncomingMessage -> Html Message
+userIdToString : UserId -> String
+userIdToString (UserId userId) =
+    userId
+
+
+messageView : UserId -> IncomingMessage -> Html Message
 messageView myUserId incomingMessage =
     let
         userView msgUserId =
@@ -120,7 +129,7 @@ update msg model =
         UserClickedSendMessageButton ->
             ( { model | messageToSend = "" }
             , sendMessage
-                { userId = model.userId
+                { userId = userIdToString model.userId
                 , message = model.messageToSend
                 , userName = model.userName
                 }
@@ -148,7 +157,7 @@ update msg model =
 
 subscriptions : Model -> Sub Message
 subscriptions model =
-    receivedMessage (\{ user_id, user_name, message } -> PortSentMessage { userId = user_id, userName = user_name, message = message })
+    receivedMessage (\{ user_id, user_name, message } -> PortSentMessage { userId = UserId user_id, userName = user_name, message = message })
 
 
 
