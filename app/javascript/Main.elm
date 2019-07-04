@@ -1,7 +1,7 @@
 port module Main exposing (Message(..), Model, init, main, sendMessage, subscriptions, update, view)
 
 import Browser
-import Html exposing (Html, br, button, h1, input, text)
+import Html exposing (Html, br, button, div, h1, h2, input, text)
 import Html.Attributes exposing (style, value)
 import Html.Events exposing (onClick, onInput)
 import Json.Decode
@@ -13,7 +13,7 @@ import Maybe.Extra
 
 
 type alias Model =
-    { messageReceived : Maybe String
+    { messagesReceived : List String
     , messageToSend : String
     }
 
@@ -24,7 +24,7 @@ type alias Model =
 
 init : ( Model, Cmd Message )
 init =
-    ( { messageReceived = Nothing
+    ( { messagesReceived = []
       , messageToSend = ""
       }
     , Cmd.none
@@ -51,9 +51,23 @@ bodyView model =
         ]
     , input [ onInput UserUpdatesMessageToSend, value model.messageToSend ] []
     , button [ onClick UserClickedSendMessageButton ] [ text "Send Message" ]
-    , br [] []
-    , Maybe.Extra.unwrap (text "") (\msg -> text <| "Message Received! " ++ msg) model.messageReceived
+    , messagesView model.messagesReceived
     ]
+
+
+messagesView : List String -> Html Message
+messagesView messages =
+    div []
+        [ h2 [] [ text "Messages" ]
+        , div [] <| List.map messageView messages
+        ]
+
+
+messageView : String -> Html Message
+messageView message =
+    div []
+        [ text <| "Message: " ++ message
+        ]
 
 
 
@@ -79,7 +93,7 @@ update msg model =
             )
 
         PortSentMessage message ->
-            ( { model | messageReceived = Just message }
+            ( { model | messagesReceived = message :: model.messagesReceived }
             , Cmd.none
             )
 
