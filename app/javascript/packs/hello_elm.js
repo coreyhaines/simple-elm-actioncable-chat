@@ -6,11 +6,16 @@ import {
   Elm
 } from '../Main'
 
+import { sendMessage, setCallback } from '../cable_client'
+
 document.addEventListener('DOMContentLoaded', () => {
   const target = document.getElementById('elm-app')
 
   document.body.appendChild(target)
-  Elm.Main.init({
+  const app = Elm.Main.init({
     node: target
   })
+
+  setCallback((msg) => { console.log("received", msg) });
+  app.ports.sendMessage.subscribe((message) => { sendMessage(message) });
 })
