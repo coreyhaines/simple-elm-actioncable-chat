@@ -2,8 +2,10 @@
 <html>
   <head>
     <title>ActioncableTest</title>
+    <%= action_cable_meta_tag %>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <meta name="chat_user_id" content="<%= @chat_user_id %>" %>
 
     <%= stylesheet_link_tag    'application', media: 'all' %>
   </head>

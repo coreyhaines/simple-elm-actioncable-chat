@@ -15,6 +15,7 @@ import Maybe.Extra
 type alias Model =
     { messagesReceived : List String
     , messageToSend : String
+    , userId : String
     }
 
 
@@ -22,10 +23,16 @@ type alias Model =
 -- INIT
 
 
-init : ( Model, Cmd Message )
-init =
+type alias Flags =
+    { userId : String
+    }
+
+
+init : Flags -> ( Model, Cmd Message )
+init flags =
     ( { messagesReceived = []
       , messageToSend = ""
+      , userId = flags.userId
       }
     , Cmd.none
     )
@@ -49,6 +56,7 @@ bodyView model =
       h1 [ style "display" "flex", style "justify-content" "center" ]
         [ text "Send A Chat Message"
         ]
+    , div [] [ text <| "Your user id is " ++ model.userId ]
     , input [ onInput UserUpdatesMessageToSend, value model.messageToSend ] []
     , button [ onClick UserClickedSendMessageButton ] [ text "Send Message" ]
     , messagesView model.messagesReceived
@@ -126,10 +134,10 @@ port receivedMessage : (String -> msg) -> Sub msg
 -- MAIN
 
 
-main : Program (Maybe {}) Model Message
+main : Program Flags Model Message
 main =
     Browser.document
-        { init = always init
+        { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions

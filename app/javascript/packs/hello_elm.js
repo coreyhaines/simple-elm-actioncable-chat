@@ -10,10 +10,18 @@ import { sendMessage, setCallback } from '../cable_client'
 
 document.addEventListener('DOMContentLoaded', () => {
   const target = document.getElementById('elm-app')
-
-  document.body.appendChild(target)
+  const chatUserIdNode = document.head.querySelector("[name~='chat_user_id'][content]")
+  let chatUserId;
+  if(chatUserIdNode) {
+    chatUserId = chatUserIdNode.content
+  }else{
+    chatUserId = "userid-not-set"
+  }
   const app = Elm.Main.init({
-    node: target
+    node: target,
+    flags: {
+      userId: chatUserId
+    }
   })
 
   setCallback((msg) => {
