@@ -2,6 +2,20 @@
 
 Very simple chat app that uses Elm for the front-end, Rails ActionCable on the backend.
 
+## Running
+
+Install with
+```
+bundle
+yarn
+```
+
+Run by having the two servers running
+```
+./bin/rails s
+./bin/webpack-dev-server
+```
+
 ## Thanks
 
 Used a lot from these two blog posts
