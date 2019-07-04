@@ -3,7 +3,7 @@ import createChannel from "cable";
 let callback; // declaring a variable that will hold a function later
 
 const chat = createChannel("ChatChannel", {
-  received({ message }) {
+  received(message) {
     if (callback) callback.call(null, message);
   }
 

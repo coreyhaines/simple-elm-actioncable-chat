@@ -11,7 +11,9 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def send_message(payload)
-    msg = payload["message"]
-    ActionCable.server.broadcast "chat", {message: msg}
+    data = payload["message"]
+    user_id = data["userId"]
+    msg = data["message"]
+    ActionCable.server.broadcast "chat", {message: msg, user_id: user_id}
   end
 end

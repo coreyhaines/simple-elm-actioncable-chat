@@ -13,9 +13,16 @@ import Maybe.Extra
 
 
 type alias Model =
-    { messagesReceived : List String
+    { messagesReceived : List IncomingMessage
     , messageToSend : String
     , userId : String
+    , userName : String
+    }
+
+
+type alias IncomingMessage =
+    { userId : String
+    , message : String
     }
 
 
@@ -33,6 +40,7 @@ init flags =
     ( { messagesReceived = []
       , messageToSend = ""
       , userId = flags.userId
+      , userName = "Unnamed User"
       }
     , Cmd.none
     )
@@ -56,25 +64,37 @@ bodyView model =
       h1 [ style "display" "flex", style "justify-content" "center" ]
         [ text "Send A Chat Message"
         ]
-    , div [] [ text <| "Your user id is " ++ model.userId ]
+    , div [] [ text <| "Your user id: " ++ model.userId ]
+    , div []
+        [ text "Your name: "
+        , input [ onInput UserUpdatesUserName, value model.userName ] []
+        ]
     , input [ onInput UserUpdatesMessageToSend, value model.messageToSend ] []
     , button [ onClick UserClickedSendMessageButton ] [ text "Send Message" ]
-    , messagesView model.messagesReceived
+    , messagesView model
     ]
 
 
-messagesView : List String -> Html Message
-messagesView messages =
+messagesView : { model | userId : String, messagesReceived : List IncomingMessage } -> Html Message
+messagesView { userId, messagesReceived } =
     div []
         [ h2 [] [ text "Messages" ]
-        , div [] <| List.map messageView messages
+        , div [] <| List.map (messageView userId) messagesReceived
         ]
 
 
-messageView : String -> Html Message
-messageView message =
+messageView : String -> IncomingMessage -> Html Message
+messageView myUserId incomingMessage =
+    let
+        userView msgUserId =
+            if msgUserId == myUserId then
+                "Me"
+
+            else
+                "Someone else"
+    in
     div []
-        [ text <| "Message: " ++ message
+        [ text <| "Message sent by " ++ userView incomingMessage.userId ++ " : " ++ incomingMessage.message
         ]
 
 
@@ -84,8 +104,9 @@ messageView message =
 
 type Message
     = UserClickedSendMessageButton
-    | PortSentMessage String
+    | PortSentMessage IncomingMessage
     | UserUpdatesMessageToSend String
+    | UserUpdatesUserName String
 
 
 
@@ -97,7 +118,10 @@ update msg model =
     case msg of
         UserClickedSendMessageButton ->
             ( { model | messageToSend = "" }
-            , sendMessage model.messageToSend
+            , sendMessage
+                { userId = model.userId
+                , message = model.messageToSend
+                }
             )
 
         PortSentMessage message ->
@@ -110,6 +134,11 @@ update msg model =
             , Cmd.none
             )
 
+        UserUpdatesUserName userName ->
+            ( { model | userName = userName }
+            , Cmd.none
+            )
+
 
 
 -- SUBSCRIPTIONS
@@ -117,17 +146,17 @@ update msg model =
 
 subscriptions : Model -> Sub Message
 subscriptions model =
-    receivedMessage PortSentMessage
+    receivedMessage (\{ user_id, message } -> PortSentMessage { userId = user_id, message = message })
 
 
 
 -- PORTS
 
 
-port sendMessage : String -> Cmd msg
+port sendMessage : { userId : String, message : String } -> Cmd msg
 
 
-port receivedMessage : (String -> msg) -> Sub msg
+port receivedMessage : ({ user_id : String, message : String } -> msg) -> Sub msg
 
 
 

@@ -25,8 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   setCallback((msg) => {
-    console.log("received", msg);
     app.ports.receivedMessage.send(msg);
   });
-  app.ports.sendMessage.subscribe((message) => { sendMessage(message) });
+  app.ports.sendMessage.subscribe((msg) => {
+    sendMessage(msg);
+  });
 })
