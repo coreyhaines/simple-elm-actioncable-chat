@@ -11,9 +11,9 @@ class ChatChannel < ApplicationCable::Channel
   end
 
   def send_message(payload)
-    user_id = payload["userId"]
+    user_id = payload["user_id"]
     msg = payload["message"]
-    user_name = payload["userName"]
+    user_name = payload["user_name"]
     ActionCable.server.broadcast "chat", {message: msg, user_id: user_id, user_name: user_name}
   end
 end

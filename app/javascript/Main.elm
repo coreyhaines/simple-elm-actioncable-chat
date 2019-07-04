@@ -5,6 +5,7 @@ import Html exposing (Html, br, button, div, h1, h2, input, text)
 import Html.Attributes exposing (style, value)
 import Html.Events exposing (onClick, onInput)
 import Json.Decode
+import Json.Encode
 import Maybe.Extra
 
 
@@ -116,11 +117,7 @@ update msg model =
     case msg of
         UserClickedSendMessageButton ->
             ( { model | messageToSend = "" }
-            , sendMessage
-                { userId = userIdToString model.userId
-                , message = model.messageToSend
-                , userName = model.userName
-                }
+            , sendMessage <| encodeChatMessage model
             )
 
         PortSentMessage message ->
@@ -171,7 +168,7 @@ type IncomingMessage
 
 decodeIncomingMessage : Json.Decode.Value -> IncomingMessage
 decodeIncomingMessage msgValue =
-    case Json.Decode.decodeValue incomingMessageDecoder msgValue of
+    case Json.Decode.decodeValue chatMessageDecoder msgValue of
         Ok message ->
             MessageReceived message
 
@@ -179,12 +176,21 @@ decodeIncomingMessage msgValue =
             MessageParsingError err
 
 
-incomingMessageDecoder : Json.Decode.Decoder ChatMessage
-incomingMessageDecoder =
+chatMessageDecoder : Json.Decode.Decoder ChatMessage
+chatMessageDecoder =
     Json.Decode.map3 ChatMessage
         (Json.Decode.field "user_id" userIdDecoder)
         (Json.Decode.field "user_name" Json.Decode.string)
         (Json.Decode.field "message" Json.Decode.string)
+
+
+encodeChatMessage : { model | userId : UserId, userName : String, messageToSend : String } -> Json.Encode.Value
+encodeChatMessage { userId, userName, messageToSend } =
+    Json.Encode.object
+        [ ( "user_id", Json.Encode.string <| userIdToString userId )
+        , ( "user_name", Json.Encode.string userName )
+        , ( "message", Json.Encode.string messageToSend )
+        ]
 
 
 
@@ -200,7 +206,7 @@ subscriptions model =
 -- PORTS
 
 
-port sendMessage : { userId : String, message : String, userName : String } -> Cmd msg
+port sendMessage : Json.Encode.Value -> Cmd msg
 
 
 port receivedMessage : (Json.Decode.Value -> msg) -> Sub msg
