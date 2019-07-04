@@ -22,6 +22,7 @@ type alias Model =
 
 type alias IncomingMessage =
     { userId : String
+    , userName : String
     , message : String
     }
 
@@ -88,13 +89,13 @@ messageView myUserId incomingMessage =
     let
         userView msgUserId =
             if msgUserId == myUserId then
-                "Me"
+                "(you)"
 
             else
-                "Someone else"
+                ""
     in
     div []
-        [ text <| "Message sent by " ++ userView incomingMessage.userId ++ " : " ++ incomingMessage.message
+        [ text <| "Message sent by " ++ incomingMessage.userName ++ userView incomingMessage.userId ++ " : " ++ incomingMessage.message
         ]
 
 
@@ -121,6 +122,7 @@ update msg model =
             , sendMessage
                 { userId = model.userId
                 , message = model.messageToSend
+                , userName = model.userName
                 }
             )
 
@@ -146,17 +148,17 @@ update msg model =
 
 subscriptions : Model -> Sub Message
 subscriptions model =
-    receivedMessage (\{ user_id, message } -> PortSentMessage { userId = user_id, message = message })
+    receivedMessage (\{ user_id, user_name, message } -> PortSentMessage { userId = user_id, userName = user_name, message = message })
 
 
 
 -- PORTS
 
 
-port sendMessage : { userId : String, message : String } -> Cmd msg
+port sendMessage : { userId : String, message : String, userName : String } -> Cmd msg
 
 
-port receivedMessage : ({ user_id : String, message : String } -> msg) -> Sub msg
+port receivedMessage : ({ user_id : String, user_name : String, message : String } -> msg) -> Sub msg
 
 
 
