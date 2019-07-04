@@ -12,28 +12,12 @@ import Maybe.Extra
 -- MODEL
 
 
-type UserId
-    = UserId String
-
-
 type alias Model =
     { messagesReceived : List IncomingMessage
     , messageToSend : String
     , userId : UserId
     , userName : String
     }
-
-
-type alias ChatMessage =
-    { userId : UserId
-    , userName : String
-    , message : String
-    }
-
-
-type IncomingMessage
-    = MessageParsingError Json.Decode.Error
-    | MessageReceived ChatMessage
 
 
 
@@ -89,11 +73,6 @@ messagesView { userId, messagesReceived } =
         [ h2 [] [ text "Messages" ]
         , div [] <| List.map (messageView userId) messagesReceived
         ]
-
-
-userIdToString : UserId -> String
-userIdToString (UserId userId) =
-    userId
 
 
 messageView : UserId -> IncomingMessage -> Html Message
@@ -161,12 +140,60 @@ update msg model =
 
 
 
+-- TYPES
+
+
+type UserId
+    = UserId String
+
+
+userIdDecoder : Json.Decode.Decoder UserId
+userIdDecoder =
+    Json.Decode.map UserId Json.Decode.string
+
+
+userIdToString : UserId -> String
+userIdToString (UserId userId) =
+    userId
+
+
+type alias ChatMessage =
+    { userId : UserId
+    , userName : String
+    , message : String
+    }
+
+
+type IncomingMessage
+    = MessageParsingError Json.Decode.Error
+    | MessageReceived ChatMessage
+
+
+decodeIncomingMessage : Json.Decode.Value -> IncomingMessage
+decodeIncomingMessage msgValue =
+    case Json.Decode.decodeValue incomingMessageDecoder msgValue of
+        Ok message ->
+            MessageReceived message
+
+        Err err ->
+            MessageParsingError err
+
+
+incomingMessageDecoder : Json.Decode.Decoder ChatMessage
+incomingMessageDecoder =
+    Json.Decode.map3 ChatMessage
+        (Json.Decode.field "user_id" userIdDecoder)
+        (Json.Decode.field "user_name" Json.Decode.string)
+        (Json.Decode.field "message" Json.Decode.string)
+
+
+
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Message
 subscriptions model =
-    receivedMessage (\{ user_id, user_name, message } -> PortSentMessage <| MessageReceived { userId = UserId user_id, userName = user_name, message = message })
+    receivedMessage (decodeIncomingMessage >> PortSentMessage)
 
 
 
@@ -176,7 +203,7 @@ subscriptions model =
 port sendMessage : { userId : String, message : String, userName : String } -> Cmd msg
 
 
-port receivedMessage : ({ user_id : String, user_name : String, message : String } -> msg) -> Sub msg
+port receivedMessage : (Json.Decode.Value -> msg) -> Sub msg
 
 
 
