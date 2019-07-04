@@ -57,17 +57,15 @@ init flags =
 
 view : Model -> Browser.Document Message
 view model =
-    { title = "Hello, ActionCable"
+    { title = "Chat: " ++ userIdToString model.userId
     , body = bodyView model
     }
 
 
 bodyView : Model -> List (Html Message)
 bodyView model =
-    [ -- The inline style is being used for example purposes in order to keep this example simple and
-      -- avoid loading additional resources. Use a proper stylesheet when building your own app.
-      h1 [ style "display" "flex", style "justify-content" "center" ]
-        [ text "Send A Chat Message"
+    [ h1 [ style "display" "flex", style "justify-content" "center" ]
+        [ text "Chatting With Elm"
         ]
     , div [] [ text <| "Your user id: " ++ userIdToString model.userId ]
     , div []
