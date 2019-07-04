@@ -4,6 +4,8 @@ import Browser
 import Html exposing (Html, br, button, h1, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
+import Json.Decode
+import Maybe.Extra
 
 
 
@@ -11,7 +13,8 @@ import Html.Events exposing (onClick)
 
 
 type alias Model =
-    {}
+    { messageReceived : Maybe String
+    }
 
 
 
@@ -20,7 +23,9 @@ type alias Model =
 
 init : ( Model, Cmd Message )
 init =
-    ( Model, Cmd.none )
+    ( { messageReceived = Nothing }
+    , Cmd.none
+    )
 
 
 
@@ -42,6 +47,8 @@ bodyView model =
         [ text "Hello Again!"
         ]
     , button [ onClick SendMessage ] [ text "Send Message" ]
+    , br [] []
+    , Maybe.Extra.unwrap (text "") (\msg -> text <| "Message Received! " ++ msg) model.messageReceived
     ]
 
 
@@ -51,6 +58,7 @@ bodyView model =
 
 type Message
     = SendMessage
+    | ReceivedMessage String
 
 
 
@@ -58,10 +66,15 @@ type Message
 
 
 update : Message -> Model -> ( Model, Cmd Message )
-update message model =
-    case message of
+update msg model =
+    case msg of
         SendMessage ->
             ( model, sendMessage "TRIGGERED FROM ELM!" )
+
+        ReceivedMessage message ->
+            ( { model | messageReceived = Just message }
+            , Cmd.none
+            )
 
 
 
@@ -70,7 +83,7 @@ update message model =
 
 subscriptions : Model -> Sub Message
 subscriptions model =
-    Sub.none
+    receivedMessage ReceivedMessage
 
 
 
@@ -78,6 +91,9 @@ subscriptions model =
 
 
 port sendMessage : String -> Cmd msg
+
+
+port receivedMessage : (String -> msg) -> Sub msg
 
 
 

@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     node: target
   })
 
-  setCallback((msg) => { console.log("received", msg) });
+  setCallback((msg) => {
+    console.log("received", msg);
+    app.ports.receivedMessage.send(msg);
+  });
   app.ports.sendMessage.subscribe((message) => { sendMessage(message) });
 })
